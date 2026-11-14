@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "patient-bush-7d0djarvis-api",
-  "main": "worker.js",
+  "main": "./worker.js",
   "compatibility_date": "2026-11-15"
 }
