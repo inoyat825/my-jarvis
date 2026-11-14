@@ -88,11 +88,28 @@ footer {
 function speak(text) {
     document.getElementById("answer").innerText = text;
 
+    if (!window.speechSynthesis) {
+        document.getElementById("status").innerText = "VOICE NOT SUPPORTED";
+        return;
+    }
+
+    speechSynthesis.cancel();
+
     let voice = new SpeechSynthesisUtterance(text);
     voice.lang = "ru-RU";
+    voice.rate = 0.9;
+    voice.pitch = 1;
+
+    voice.onstart = function() {
+        document.getElementById("status").innerText = "JARVIS SPEAKING...";
+    };
+
+    voice.onend = function() {
+        document.getElementById("status").innerText = "SYSTEM ONLINE";
+    };
+
     speechSynthesis.speak(voice);
 }
-
 function startListening() {
     const Recognition =
         window.SpeechRecognition ||
