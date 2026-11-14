@@ -2,156 +2,275 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JARVIS AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J.A.R.V.I.S.</title>
 
 <style>
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    background: #050b16;
-    color: #00d9ff;
-    font-family: Arial, sans-serif;
-    text-align: center;
+  margin: 0;
+  min-height: 100vh;
+  background: #050b14;
+  color: #00d9ff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
-header {
-    padding: 25px;
-    font-size: 30px;
-    letter-spacing: 5px;
-    text-shadow: 0 0 15px #00d9ff;
+.app {
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
 }
 
-.circle {
-    width: 190px;
-    height: 190px;
-    border: 3px solid #00d9ff;
-    border-radius: 50%;
-    margin: 65px auto 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 65px;
-    box-shadow: 0 0 35px #007bff;
+h1 {
+  font-size: 36px;
+  letter-spacing: 8px;
+  text-shadow: 0 0 15px #00d9ff;
+}
+
+.subtitle {
+  letter-spacing: 4px;
+  color: #8caeba;
+  font-size: 12px;
+}
+
+.status {
+  margin: 25px 0;
+  color: #00ff9d;
+}
+
+.orb {
+  width: 110px;
+  height: 110px;
+  border: 2px solid #00d9ff;
+  border-radius: 50%;
+  margin: 25px auto;
+  box-shadow: 0 0 30px #007caa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+}
+
+.chat {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #07516b;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: left;
+  background: #081421;
+  margin: 20px 0;
+}
+
+.message {
+  margin-bottom: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.user {
+  color: #fff;
+}
+
+.jarvis {
+  color: #00d9ff;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #00aaca;
+  background: #081421;
+  color: white;
+  font-size: 16px;
 }
 
 button {
-    background: transparent;
-    color: #00d9ff;
-    border: 2px solid #00d9ff;
-    padding: 15px 35px;
-    border-radius: 30px;
-    font-size: 18px;
-    margin: 10px;
+  border: 1px solid #00d9ff;
+  background: #063047;
+  color: #00d9ff;
+  padding: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
 }
 
-button:active {
-    background: #003c55;
+button:disabled {
+  opacity: 0.5;
 }
 
-#answer {
-    margin: 35px 20px;
-    font-size: 17px;
-    color: white;
+.voice {
+  width: 100%;
+  margin-top: 12px;
+  padding: 16px;
 }
 
-footer {
-    margin-top: 90px;
-    color: #607080;
+#statusText {
+  color: #8caeba;
+  font-size: 13px;
+  margin-top: 15px;
 }
 </style>
 </head>
 
 <body>
 
-<header>J.A.R.V.I.S.</header>
+<div class="app">
 
-<div class="circle">◉</div>
+<h1>J.A.R.V.I.S.</h1>
+<div class="subtitle">PERSONAL AI SYSTEM</div>
 
-<h2>PERSONAL AI SYSTEM</h2>
+<div class="status">● SYSTEM ONLINE</div>
 
-<p id="status">SYSTEM ONLINE</p>
+<div class="orb">◉</div>
 
-<button onclick="startListening()">🎙️ TALK</button>
-
-<div id="answer">
-    Здравствуйте. Я JARVIS.
-    Чем могу помочь?
+<div class="chat" id="chat">
+  <div class="message jarvis">
+    JARVIS: Здравствуйте. Я JARVIS. Чем могу помочь?
+  </div>
 </div>
 
-<footer>JARVIS SYSTEM v1.0</footer>
+<div class="controls">
+  <input id="message" placeholder="Напишите сообщение...">
+  <button id="sendButton" onclick="sendMessage()">➤</button>
+</div>
+
+<button class="voice" onclick="startVoice()">🎙️ TALK</button>
+
+<div id="statusText">Система готова к работе.</div>
+
+</div>
 
 <script>
-function speak(text) {
-    document.getElementById("answer").innerText = text;
+const API = "https://patient-bush-7d0djarvis-api.inoyatv.workers.dev";
 
-    if (!window.speechSynthesis) {
-        document.getElementById("status").innerText = "VOICE NOT SUPPORTED";
-        return;
-    }
+const chat = document.getElementById("chat");
+const input = document.getElementById("message");
+const statusText = document.getElementById("statusText");
+const sendButton = document.getElementById("sendButton");
 
-    speechSynthesis.cancel();
-
-    let voice = new SpeechSynthesisUtterance(text);
-    voice.lang = "ru-RU";
-    voice.rate = 0.9;
-    voice.pitch = 1;
-
-    voice.onstart = function() {
-        document.getElementById("status").innerText = "JARVIS SPEAKING...";
-    };
-
-    voice.onend = function() {
-        document.getElementById("status").innerText = "SYSTEM ONLINE";
-    };
-
-    speechSynthesis.speak(voice);
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.textContent = (type === "user" ? "ВЫ: " : "JARVIS: ") + text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
 }
-function startListening() {
-    const Recognition =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
 
-    if (!Recognition) {
-        speak("Ваш браузер не поддерживает распознавание голоса.");
-        return;
+async function sendMessage() {
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  addMessage(message, "user");
+  input.value = "";
+
+  sendButton.disabled = true;
+  statusText.textContent = "JARVIS думает...";
+
+  const reply = addMessage("Обрабатываю запрос...", "jarvis");
+
+  try {
+    const response = await fetch(API + "/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.answer) {
+      throw new Error(data.error || "Ошибка ответа");
     }
 
-    let recognition = new Recognition();
-    recognition.lang = "ru-RU";
+    reply.textContent = "JARVIS: " + data.answer;
+    statusText.textContent = "Ответ готов.";
 
-    recognition.onstart = function() {
-        document.getElementById("status").innerText =
-            "LISTENING...";
-    };
+    speak(data.answer);
 
-    recognition.onresult = function(event) {
-        let command = event.results[0][0].transcript.toLowerCase();
+  } catch (error) {
+    reply.textContent = "JARVIS: Не удалось подключиться. Проверьте соединение.";
+    statusText.textContent = "Ошибка подключения.";
+  }
 
-        if (command.includes("привет")) {
-            speak("Здравствуйте. Я готов к работе.");
-        } else if (command.includes("как дела")) {
-            speak("Все системы работают нормально.");
-        } else if (command.includes("твоё имя")) {
-            speak("Меня зовут JARVIS.");
-        } else {
-            speak("Команда получена. Пока я учусь.");
-        }
-    };
+  sendButton.disabled = false;
+  chat.scrollTop = chat.scrollHeight;
+}
 
-    recognition.onerror = function() {
-        speak("Не удалось распознать команду.");
-    };
+input.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") sendMessage();
+});
 
-    recognition.onend = function() {
-        document.getElementById("status").innerText =
-            "SYSTEM ONLINE";
-    };
+async function speak(text) {
+  try {
+    const response = await fetch(API + "/speak", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text })
+    });
 
-    recognition.start();
+    if (!response.ok) throw new Error("Voice error");
+
+    const blob = await response.blob();
+    const audioURL = URL.createObjectURL(blob);
+    const audio = new Audio(audioURL);
+
+    audio.onended = () => URL.revokeObjectURL(audioURL);
+    await audio.play();
+
+  } catch (error) {
+    statusText.textContent = "Текст готов. Не удалось воспроизвести голос.";
+  }
+}
+
+function startVoice() {
+  const Recognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!Recognition) {
+    statusText.textContent =
+      "Голосовой ввод не поддерживается этим браузером. Используйте текст.";
+    return;
+  }
+
+  const recognition = new Recognition();
+  recognition.lang = "ru-RU";
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    statusText.textContent = "Слушаю вас...";
+  };
+
+  recognition.onresult = (event) => {
+    input.value = event.results[0][0].transcript;
+    sendMessage();
+  };
+
+  recognition.onerror = () => {
+    statusText.textContent = "Не удалось распознать голос.";
+  };
+
+  recognition.start();
 }
 </script>
 
